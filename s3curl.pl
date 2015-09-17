@@ -27,14 +27,7 @@ use constant STAT_MODE => 2;
 use constant STAT_UID => 4;
 
 # begin customizing here
-my @endpoints = ( 's3.amazonaws.com',
-                  's3-us-west-1.amazonaws.com',
-                  's3-us-west-2.amazonaws.com',
-                  's3-us-gov-west-1.amazonaws.com',
-                  's3-eu-west-1.amazonaws.com',
-                  's3-ap-southeast-1.amazonaws.com',
-                  's3-ap-northeast-1.amazonaws.com',
-                  's3-sa-east-1.amazonaws.com', );
+my @endpoints = ( 'object.ecstestdrive.com', );
 
 my $CURL = "curl";
 
@@ -215,6 +208,16 @@ for (my $i=0; $i<@ARGV; $i++) {
             $host = $1;
         }
         elsif ($header =~ /^([Xx]-[Aa][Mm][Zz]-[^:]+): *(.+)$/) {
+            my $name = lc $1;
+            my $value = $2;
+            # merge with existing values
+            if (exists $xamzHeaders{$name}) {
+                $value = $xamzHeaders{$name} . "," . $value;
+            }
+            $xamzHeaders{$name} = $value;
+        }
+        # Added by Denis Jannot to include x-emc-* headers in the signature computation
+        elsif ($header =~ /^([Xx]-[Ee][Mm][Cc]-.+): *(.+)$/) {
             my $name = lc $1;
             my $value = $2;
             # merge with existing values
